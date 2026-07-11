@@ -209,6 +209,17 @@ body{font-family:"Nunito",sans-serif;background:linear-gradient(160deg,#f5e0ff 0
 <div class="card"><div id="dt-pod"></div></div>
 <button class="btn bp bf" onclick="show('s-dt-setup')" style="font-size:18px;padding:13px;margin-top:.5rem">🔄 Rejouer !</button>
 <button class="btn bg bf" onclick="show('s-home')" style="margin-top:8px">← Accueil</button></div>
+<div id="s-uc-reveal" class="screen">
+  <div style="text-align:center;padding:2rem 0 1rem">
+    <div style="font-size:80px;margin-bottom:1rem" id="uc-rev-emoji"></div>
+    <div style="font-family:'Fredoka One',cursive;font-size:28px;color:#6a1f9e;margin-bottom:.5rem" id="uc-rev-name"></div>
+    <div id="uc-rev-badge" style="display:inline-block;padding:8px 24px;border-radius:999px;font-family:'Fredoka One',cursive;font-size:20px;margin-bottom:1rem"></div>
+    <div style="font-size:15px;color:#7a5a9a;font-weight:700" id="uc-rev-msg"></div>
+  </div>
+  <div class="swirl"></div>
+  <button class="btn bp bf" onclick="ucAfterReveal()" style="font-size:20px;padding:15px" id="uc-rev-btn">Continuer ➡️</button>
+</div>
+
 </div>
 <script>
 const COLS=["#9b4dca","#1a7ab5","#e8a020","#27ae60","#e74c3c","#16a085","#8e44ad","#2e86c1"];
@@ -289,16 +300,31 @@ function ucEL(){
   if(!p)return;
   p.eliminated=true;uc.selectedElim=null;
   const role=p.role;
-  const rl=role==="civil"?"CIVIL":role==="undercover"?"INFILTRÉ":"MR WHITE";
   const em=role==="civil"?"😬":role==="undercover"?"🎉":"👻";
-  alert(em+" "+p.name+" était "+rl+" !");
+  const rl=role==="civil"?"Civil":role==="undercover"?"Infiltré":"Mr White";
+  const msg=role==="civil"?"Mauvaise pioche... les civils continuent !":role==="undercover"?"Bien joué, l\'infiltré est démasqué !":"Le Mr White est éliminé !";
+  const bg=role==="civil"?"rgba(39,174,96,.2)":role==="undercover"?"rgba(231,76,60,.2)":"rgba(245,216,0,.2)";
+  const col=role==="civil"?"#1a7a40":role==="undercover"?"#8b1a10":"#7a6000";
+  const bord=role==="civil"?"rgba(39,174,96,.5)":role==="undercover"?"rgba(231,76,60,.5)":"rgba(245,216,0,.5)";
+  document.getElementById("uc-rev-emoji").textContent=em;
+  document.getElementById("uc-rev-name").textContent=p.name;
+  const badge=document.getElementById("uc-rev-badge");
+  badge.textContent=(role==="civil"?"✅ ":role==="undercover"?"🦎 ":"👻 ")+rl;
+  badge.style.background=bg;badge.style.color=col;badge.style.border="2px solid "+bord;
+  document.getElementById("uc-rev-msg").textContent=msg;
+  show("s-uc-reveal");
+}
+function ucAfterReveal(){
   ucRI();ucREL();ucRO();
   const active=uc.players.filter(p=>!p.eliminated);
   const aU=active.filter(p=>p.role==="undercover"||p.role==="white");
   const aC=active.filter(p=>p.role==="civil");
-  if(aU.length===0)setTimeout(()=>ucSE("civil"),300);
-  else if(aU.length>=aC.length)setTimeout(()=>ucSE("undercover"),300);
+  if(aU.length===0)ucSE("civil");
+  else if(aU.length>=aC.length)ucSE("undercover");
+  else show("s-uc-game");
 }
+
+
 function ucCE(){const active=uc.players.filter(p=>!p.eliminated);const aU=active.filter(p=>p.role==="undercover"||p.role==="white");const aC=active.filter(p=>p.role==="civil");if(aU.length===0)ucSE("civil");else if(aU.length>=aC.length)ucSE("undercover");else alert("La partie continue ! "+active.length+" joueurs restants.");}
 function ucSE(w){document.getElementById("uc-ei").textContent=w==="civil"?"🕵️":"🦎";document.getElementById("uc-etl").textContent=w==="civil"?"Les Civils gagnent !":"L'Infiltré gagne !";document.getElementById("uc-esb").textContent='Mot civil : "'+uc.civilWord+'" · Mot infiltré : "'+uc.underWord+'"';const el=document.getElementById("uc-er");el.innerHTML="";uc.players.forEach(p=>{const d=document.createElement("div");d.className="upt"+(p.role==="undercover"?" ru":p.role==="white"?" rw":"");const rl=p.role==="civil"?"✅ Civil":p.role==="undercover"?"🦎 Infiltré":"👻 Mr White";d.innerHTML='<span style="font-weight:800">'+p.name+'</span><span style="font-size:13px;font-weight:700">'+rl+"</span>";el.appendChild(d);});show("s-uc-end");}
 
